@@ -1,0 +1,6 @@
+{
+  "name": "상지여자중학교 연수 등록부",
+  "description": "상지여자중학교 연수 등록부 생성기 - 교사·교직원·학부모·그 외 4개 그룹 분리, 실시간 클라우드 DB 자동 저장 및 공유 연동, A4 출력 최적화",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

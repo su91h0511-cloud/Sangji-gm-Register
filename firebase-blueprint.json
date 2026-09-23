@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TrainingRegistrySchema",
+  "entities": {
+    "TrainingSession": {
+      "collection": "training_sessions",
+      "fields": {
+        "groupsData": {
+          "type": "object",
+          "description": "교사, 교직원, 학부모, 그 외 4개 그룹별 연수 정보 및 참가자 명단"
+        },
+        "formConfig": {
+          "type": "object",
+          "description": "서식 설정 (표 여백, 폰트, 서식 스타일 등)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "최종 수정 일시"
+        }
+      }
+    }
+  }
+}
