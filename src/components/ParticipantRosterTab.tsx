@@ -220,7 +220,7 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
 
   return (
     <div className="w-full space-y-5 pb-16">
-      {/* 3 Target Groups Selector Bar (교사 / 교직원 / 그 외) */}
+      {/* 5 Target Groups Selector Bar (교사 / 교직원 / 학부모 / 교직원(강사포함) / 협의회 등록부) */}
       <GroupSelectorBar
         selectedGroup={selectedGroup}
         onSelectGroup={onSelectGroup}
@@ -237,7 +237,7 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-stone-900">
-                [{currentGroupConfig.label}] 명단 입력 및 연수 정보 관리
+                [{currentGroupConfig.label}] 명단 입력 및 {selectedGroup === 'meeting' ? '협의회' : '연수'} 정보 관리
               </h2>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <CheckCircle2 className="w-3 h-3" />
@@ -245,7 +245,7 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
               </span>
             </div>
             <p className="text-xs sm:text-sm text-stone-600 mt-1">
-              현재 <strong>&apos;{currentGroupConfig.label}&apos;</strong> 그룹을 편집하고 있습니다. 여기서 수정한 연수 기본 정보와 참가자 명단은 <strong>[📄 등록부]</strong>의 &apos;{currentGroupConfig.label}&apos; 등록부에 즉시 자동 불러와집니다.
+              현재 <strong>&apos;{currentGroupConfig.label}&apos;</strong> 그룹을 편집하고 있습니다. 여기서 수정한 기본 정보와 참가자 명단은 <strong>[📄 등록부]</strong>의 &apos;{currentGroupConfig.label}&apos; 등록부에 즉시 자동 불러와집니다.
             </p>
           </div>
         </div>
@@ -257,13 +257,13 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
           <div>
             <h3 className="text-sm font-bold text-stone-800 flex items-center gap-2">
               <Building2 className="w-4 h-4 text-stone-500" />
-              <span>[{currentGroupConfig.label}] 연수 기본 정보</span>
+              <span>[{currentGroupConfig.label}] {selectedGroup === 'meeting' ? '협의회 기본 정보' : '연수 기본 정보'}</span>
               <span className="text-[11px] font-normal px-2 py-0.5 rounded-md bg-stone-100 text-stone-600 border border-stone-200">
                 {currentGroupConfig.description}
               </span>
             </h3>
             <p className="text-[11px] text-stone-500 mt-0.5">
-              교사, 교직원, 학부모, 그 외 그룹별로 연수명·일시·장소·주관부서가 각각 따로 저장됩니다.
+              교사, 교직원, 학부모, 교직원(강사포함), 협의회 등록부 그룹별로 제목·일시·장소·주관부서가 각각 따로 저장됩니다.
             </p>
           </div>
           <span className="text-xs text-stone-500">
@@ -273,13 +273,21 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           <div>
-            <label className="block text-stone-500 font-medium mb-1">연수명</label>
+            <label className="block text-stone-500 font-medium mb-1">
+              {selectedGroup === 'other' ? '제목' : selectedGroup === 'meeting' ? '협의회명' : '연수명'}
+            </label>
             <input
               type="text"
               value={trainingInfo.title}
               onChange={(e) => onUpdateInfo('title', e.target.value)}
               className="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-md focus:outline-none focus:bg-white focus:border-stone-800"
-              placeholder="연수명 입력"
+              placeholder={
+                selectedGroup === 'other'
+                  ? '제목 입력'
+                  : selectedGroup === 'meeting'
+                  ? '협의회명 입력'
+                  : '연수명 입력'
+              }
             />
           </div>
           <div>

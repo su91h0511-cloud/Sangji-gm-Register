@@ -149,13 +149,14 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                   onUpdateInfo={onUpdateInfo}
                   isEditingTitle={isEditingTitle}
                   setIsEditingTitle={setIsEditingTitle}
+                  selectedGroup={selectedGroup}
                 />
               ) : (
                 /* Sub-page header */
                 <div className="w-full flex items-center justify-between border-b-2 border-stone-800 pb-2 mb-3 text-xs">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-stone-900 text-sm tracking-wider">
-                      {trainingInfo.title || '연수 등록부'}
+                      {trainingInfo.title || (selectedGroup === 'meeting' ? '협의회 등록부' : '연수 등록부')}
                     </span>
                     <span className="text-stone-500 font-medium">({trainingInfo.date})</span>
                   </div>

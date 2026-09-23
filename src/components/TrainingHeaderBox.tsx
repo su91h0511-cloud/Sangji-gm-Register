@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrainingInfo, FormConfig } from '../types';
+import { TrainingInfo, FormConfig, TargetGroup } from '../types';
 
 interface TrainingHeaderBoxProps {
   info: TrainingInfo;
@@ -8,6 +8,7 @@ interface TrainingHeaderBoxProps {
   onUpdateInfo: (field: keyof TrainingInfo, value: string) => void;
   isEditingTitle: boolean;
   setIsEditingTitle: (v: boolean) => void;
+  selectedGroup?: TargetGroup;
 }
 
 export const TrainingHeaderBox: React.FC<TrainingHeaderBoxProps> = ({
@@ -17,7 +18,26 @@ export const TrainingHeaderBox: React.FC<TrainingHeaderBoxProps> = ({
   onUpdateInfo,
   isEditingTitle,
   setIsEditingTitle,
+  selectedGroup,
 }) => {
+  const getDocTitle = () => {
+    if (info.title) return info.title;
+    if (selectedGroup === 'meeting') return '협 의 회 등 록 부';
+    return '연 수 등 록 부';
+  };
+
+  const getTitleLabel = () => {
+    if (selectedGroup === 'other') return '제 \u00a0\u00a0\u00a0 목';
+    if (selectedGroup === 'meeting') return '협의회명';
+    return '연 수 명';
+  };
+
+  const getTitlePlaceholder = () => {
+    if (selectedGroup === 'other') return '제목을 입력하세요';
+    if (selectedGroup === 'meeting') return '협의회명을 입력하세요';
+    return '연수명을 입력하세요';
+  };
+
   return (
     <div className="w-full mb-3 sm:mb-3.5">
       {/* Document Title (Centered, Approval box removed) */}
@@ -38,10 +58,10 @@ export const TrainingHeaderBox: React.FC<TrainingHeaderBoxProps> = ({
             id="header-title-display"
             onClick={() => setIsEditingTitle(true)}
             className="cursor-pointer group relative inline-block text-center"
-            title="클릭하여 연수명 변경"
+            title="클릭하여 제목 변경"
           >
             <h1 className="text-2xl sm:text-[26px] font-bold tracking-[0.25em] text-stone-950 pb-0.5 border-b-2 border-transparent group-hover:border-stone-400 transition-colors">
-              {info.title || '연 수 등 록 부'}
+              {getDocTitle()}
             </h1>
             <span className="no-print absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
               (클릭하여 수정)
@@ -55,7 +75,7 @@ export const TrainingHeaderBox: React.FC<TrainingHeaderBoxProps> = ({
         <tbody>
           <tr className="border-b border-stone-800">
             <th className="w-20 sm:w-24 bg-stone-100/90 py-1 sm:py-1.5 px-2.5 font-semibold text-stone-800 text-left border-r border-stone-800 whitespace-nowrap">
-              연 수 명
+              {getTitleLabel()}
             </th>
             <td colSpan={3} className="py-0.5 px-2 border-r border-stone-800 font-medium text-stone-900">
               <input
@@ -63,7 +83,7 @@ export const TrainingHeaderBox: React.FC<TrainingHeaderBoxProps> = ({
                 type="text"
                 value={info.title}
                 onChange={(e) => onUpdateInfo('title', e.target.value)}
-                placeholder="연수명을 입력하세요"
+                placeholder={getTitlePlaceholder()}
                 className="w-full bg-transparent focus:outline-none focus:bg-amber-50/50 py-0.5 px-1 rounded"
               />
             </td>

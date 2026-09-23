@@ -24,7 +24,7 @@ export interface Participant {
 export type RowHeight = 'compact' | 'normal' | 'spacious';
 export type FormStyle = 'clean' | 'navy' | 'classic';
 
-export type TargetGroup = 'teacher' | 'staff' | 'parents' | 'other';
+export type TargetGroup = 'teacher' | 'staff' | 'parents' | 'other' | 'meeting';
 
 export interface GroupConfig {
   id: TargetGroup;
@@ -54,9 +54,15 @@ export const TARGET_GROUPS: GroupConfig[] = [
   },
   {
     id: 'other',
-    label: '그 외',
-    shortLabel: '그 외',
-    description: '학교운영위원회, 지역사회 자문위원, 외부 강사 및 지원인력 연수',
+    label: '교직원(강사포함)',
+    shortLabel: '교직원(강사포함)',
+    description: '교직원 및 외부·초빙강사, 산학겸임강사 포함 직무연수 및 교육',
+  },
+  {
+    id: 'meeting',
+    label: '협의회 등록부',
+    shortLabel: '협의회',
+    description: '교과 협의회, 학년 협의회, 부서 및 각종 위원회 회의·협의회 등록부',
   },
 ];
 

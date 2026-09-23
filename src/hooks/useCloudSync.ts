@@ -31,12 +31,13 @@ export function useCloudSync() {
           const data = snapshot.data();
           if (data && data.groupsData) {
             isRemoteUpdate.current = true;
-            // Ensure all 4 groups exist in groupsData even if older doc had fewer
+            // Ensure all 5 groups exist in groupsData even if older doc had fewer
             const mergedGroups: AllGroupsData = {
               teacher: data.groupsData.teacher || initialGroupsData.teacher,
               staff: data.groupsData.staff || initialGroupsData.staff,
               parents: data.groupsData.parents || initialGroupsData.parents,
               other: data.groupsData.other || initialGroupsData.other,
+              meeting: data.groupsData.meeting || initialGroupsData.meeting,
             };
             setGroupsData(mergedGroups);
 

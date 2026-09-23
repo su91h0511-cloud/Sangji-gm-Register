@@ -338,7 +338,7 @@ export default function App() {
               <Users className={`w-4 h-4 ${activeTab === 'roster' ? 'text-amber-400' : 'text-stone-500'}`} />
               <span>명단 입력 및 관리</span>
               <span className="hidden sm:inline-block text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200/80 font-normal">
-                교사·교직원·학부모·그외 구분
+                교사·교직원·학부모·교직원(강사포함)·협의회 구분
               </span>
             </button>
 
