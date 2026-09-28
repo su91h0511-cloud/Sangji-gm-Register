@@ -147,7 +147,7 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
         return (
           <div
             key={`page-${page.pageIndex}`}
-            className="a4-page bg-white shadow-xl print:shadow-none border border-stone-200 print:border-none my-4 print:my-0 pt-[15mm] px-[15mm] pb-[10mm] print:p-0 flex flex-col justify-between text-stone-900 transition-shadow"
+            className="a4-page bg-white shadow-xl print:shadow-none border border-stone-200 print:border-none my-4 print:my-0 pt-[15mm] px-[15mm] pb-[10mm] print:pt-[15mm] print:px-[15mm] print:pb-[10mm] flex flex-col justify-between text-stone-900 transition-shadow"
           >
             {/* Top section: Header & Info */}
             <div className="w-full">

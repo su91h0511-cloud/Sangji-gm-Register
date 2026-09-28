@@ -37,19 +37,21 @@ export const PrintGuideModal: React.FC<PrintGuideModalProps> = ({
         </div>
 
         <div className="p-5 space-y-3.5 text-xs text-stone-600">
-          <div className="flex items-start gap-2.5 p-2.5 bg-stone-50 rounded-lg border border-stone-200">
+          <div className="flex items-start gap-2.5 p-2.5 bg-emerald-50/80 rounded-lg border border-emerald-200">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <strong className="text-stone-800 block">용지 크기: A4 선택</strong>
-              <span>대화상자의 용지 크기 옵션이 &apos;A4 (210 x 297mm)&apos;로 되어 있는지 확인합니다.</span>
+              <strong className="text-emerald-950 block">상단 날짜·제목 및 하단 주소(URL) 자동 제거</strong>
+              <span className="text-emerald-900">
+                인쇄 규격 설정으로 브라우저 상단 날짜, 문서 제목, 하단 웹주소(URL)가 인쇄물과 PDF에 나오지 않도록 자동 차단되었습니다. 혹시 인쇄 창에 &apos;머리글 및 바닥글&apos; 옵션이 있다면 &apos;체크 해제&apos; 상태인지 확인해주세요.
+              </span>
             </div>
           </div>
 
           <div className="flex items-start gap-2.5 p-2.5 bg-stone-50 rounded-lg border border-stone-200">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <strong className="text-stone-800 block">용지 여백: 위쪽 15mm, 좌·우 15mm, 하단 10mm</strong>
-              <span>서식 규격에 맞추어 위쪽 15mm, 좌·우 15mm, 하단 10mm 여백이 자동 적용되어 있으며, 표 끝 줄과 하단 기관명 사이의 간격이 최소화되어 있습니다.</span>
+              <strong className="text-stone-800 block">용지 크기 및 여백</strong>
+              <span>A4 (210 x 297mm) 용지에 위 15mm, 좌·우 15mm, 하단 10mm 규격 여백이 서식 내부에 완벽히 맞춰져 있습니다. 대화상자의 여백 옵션은 &apos;기본값&apos; 또는 &apos;없음&apos;을 권장합니다.</span>
             </div>
           </div>
 

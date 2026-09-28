@@ -246,12 +246,26 @@ export default function App() {
     handleUpdateParticipant(activeSignParticipant.id, 'signature', signatureData);
   };
 
-  // Print handler
+  // Print handler with browser title suppression
   const handlePrint = () => {
     setActiveTab('document');
+    
+    // Temporarily clear document.title so browser headers do not display the webpage title
+    const originalTitle = document.title;
+    document.title = '';
+
+    const restoreTitle = () => {
+      document.title = originalTitle;
+      window.removeEventListener('afterprint', restoreTitle);
+    };
+
+    window.addEventListener('afterprint', restoreTitle);
+
     setTimeout(() => {
       window.print();
-    }, 50);
+      // Fallback restoration in case afterprint does not fire in some browsers
+      setTimeout(restoreTitle, 1500);
+    }, 100);
   };
 
   // PDF Export handler using jsPDF + html2canvas

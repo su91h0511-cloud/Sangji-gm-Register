@@ -21,10 +21,8 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin-top: 15mm;
-    margin-left: 15mm;
-    margin-right: 15mm;
-    margin-bottom: 10mm;
+    /* margin: 0 suppresses browser default header (date, title) and footer (URL address, page number) */
+    margin: 0 !important;
   }
 
   html, body {
@@ -32,8 +30,7 @@
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100% !important;
-    height: auto !important;
+    width: 210mm !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -63,20 +60,27 @@
   }
 
   .a4-page {
-    width: 100% !important;
-    min-height: auto !important;
-    height: auto !important;
+    width: 210mm !important;
+    min-height: 296.5mm !important;
+    height: 296.5mm !important;
+    box-sizing: border-box !important;
+    padding-top: 15mm !important;
+    padding-left: 15mm !important;
+    padding-right: 15mm !important;
+    padding-bottom: 10mm !important;
     margin: 0 !important;
-    padding: 0 !important;
     box-shadow: none !important;
     border: none !important;
-    page-break-after: always;
-    break-after: page;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    overflow: hidden !important;
   }
 
   .a4-page:last-child {
-    page-break-after: auto;
-    break-after: auto;
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 
   /* Ensure crisp black table borders in print */
