@@ -11,13 +11,20 @@
   width: 210mm;
   min-height: 297mm;
   box-sizing: border-box;
+  padding-top: 15mm;
+  padding-left: 15mm;
+  padding-right: 15mm;
+  padding-bottom: 10mm;
 }
 
 /* Print Specific Rules */
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm 12mm;
+    margin-top: 15mm;
+    margin-left: 15mm;
+    margin-right: 15mm;
+    margin-bottom: 10mm;
   }
 
   html, body {

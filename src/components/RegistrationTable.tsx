@@ -37,21 +37,29 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
   isEditingTitle,
   setIsEditingTitle,
 }) => {
-  // Row height classes tailored for 15 rows per A4 sheet
-  const getRowHeightClass = () => {
-    switch (config.rowHeight) {
-      case 'compact':
-        return 'h-9 sm:h-9.5 text-xs';
-      case 'spacious':
-        return 'h-12 sm:h-[50px] text-xs sm:text-sm';
-      case 'normal':
-      default:
-        return 'h-[44px] sm:h-[45px] text-xs sm:text-sm';
+  // Row height classes tailored for 'normal' (표준) and 'spacious' (넓게) to minimize bottom margin
+  const getRowHeightClass = (isFirstPage: boolean) => {
+    if (config.rowHeight === 'spacious') {
+      return isFirstPage
+        ? 'h-[58px] sm:h-[59px] text-xs sm:text-sm'
+        : 'h-[59px] sm:h-[60px] text-xs sm:text-sm';
     }
+    // 'normal' (표준)
+    return isFirstPage
+      ? 'h-[48px] sm:h-[49px] text-xs sm:text-sm'
+      : 'h-[47px] sm:h-[48px] text-xs sm:text-sm';
   };
 
-  // Fixed at 15 rows per sheet as requested ("한장에 15개씩")
-  const ROWS_PER_PAGE = 15;
+  // 페이지 서명칸 개수: 상단 여백(15mm) 및 하단 여백(10mm)에 맞추어 용지 전체를 꽉 채우도록 자동 설정
+  // 표준: 1페이지 16줄, 2페이지부터 19줄 (하단 여백 10mm)
+  // 넓게: 1페이지 13줄, 2페이지부터 15줄 (하단 여백 10mm)
+  const getPageCapacity = (pageNum: number) => {
+    const isSpacious = config.rowHeight === 'spacious';
+    if (pageNum === 1) {
+      return isSpacious ? 13 : 16;
+    }
+    return isSpacious ? 15 : 19;
+  };
 
   interface PageRow {
     participant?: Participant;
@@ -59,15 +67,16 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
     isPlaceholder?: boolean;
   }
 
-  // Split participants into pages (15 items per page)
+  // Split participants into pages with automatic capacity based on row height
   const pages: { pageIndex: number; rows: PageRow[] }[] = [];
-  const shouldFill15 = config.fillEmptyRows !== false;
+  const shouldFillRows = config.fillEmptyRows !== false;
 
   if (participants.length === 0) {
-    if (shouldFill15) {
+    if (shouldFillRows) {
+      const page1Capacity = getPageCapacity(1);
       pages.push({
         pageIndex: 1,
-        rows: Array.from({ length: ROWS_PER_PAGE }, (_, i) => ({
+        rows: Array.from({ length: page1Capacity }, (_, i) => ({
           displayNo: i + 1,
           isPlaceholder: true,
         })),
@@ -80,16 +89,17 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
     let pageNum = 1;
 
     while (currentIndex < participants.length) {
-      const slice = participants.slice(currentIndex, currentIndex + ROWS_PER_PAGE);
+      const pageSize = getPageCapacity(pageNum);
+      const slice = participants.slice(currentIndex, currentIndex + pageSize);
       const pageRows: PageRow[] = slice.map((item, idx) => ({
         participant: item,
         displayNo: currentIndex + idx + 1,
         isPlaceholder: false,
       }));
 
-      // Pad remaining rows up to 15 if enabled so the sheet stays a complete 15-row form
-      if (shouldFill15 && pageRows.length < ROWS_PER_PAGE) {
-        const remainingCount = ROWS_PER_PAGE - pageRows.length;
+      // Pad remaining rows up to page capacity if enabled
+      if (shouldFillRows && pageRows.length < pageSize) {
+        const remainingCount = pageSize - pageRows.length;
         const startNo = currentIndex + pageRows.length + 1;
         for (let i = 0; i < remainingCount; i++) {
           pageRows.push({
@@ -104,7 +114,7 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
         rows: pageRows,
       });
 
-      currentIndex += ROWS_PER_PAGE;
+      currentIndex += pageSize;
       pageNum++;
     }
   }
@@ -137,7 +147,7 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
         return (
           <div
             key={`page-${page.pageIndex}`}
-            className="a4-page bg-white shadow-xl print:shadow-none border border-stone-200 print:border-none my-4 print:my-0 px-7 py-6 sm:px-9 sm:py-7 print:p-0 flex flex-col justify-between text-stone-900 transition-shadow"
+            className="a4-page bg-white shadow-xl print:shadow-none border border-stone-200 print:border-none my-4 print:my-0 pt-[15mm] px-[15mm] pb-[10mm] print:p-0 flex flex-col justify-between text-stone-900 transition-shadow"
           >
             {/* Top section: Header & Info */}
             <div className="w-full">
@@ -156,7 +166,7 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                 <div className="w-full flex items-center justify-between border-b-2 border-stone-800 pb-2 mb-3 text-xs">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-stone-900 text-sm tracking-wider">
-                      {trainingInfo.title || (selectedGroup === 'meeting' ? '협의회 등록부' : '연수 등록부')}
+                      {trainingInfo.title || (selectedGroup === 'meeting' ? '협의회 등록부' : selectedGroup === 'other' ? '교직원(강사포함) 등록부' : '연수 등록부')}
                     </span>
                     <span className="text-stone-500 font-medium">({trainingInfo.date})</span>
                   </div>
@@ -206,7 +216,7 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                   </thead>
                   <tbody>
                     {page.rows.map(({ participant, displayNo, isPlaceholder }, rowIndex) => {
-                      const rowHeightClass = getRowHeightClass();
+                      const rowHeightClass = getRowHeightClass(isFirstPage);
                       const isEven = rowIndex % 2 === 1;
 
                       if (isPlaceholder || !participant) {
@@ -381,12 +391,12 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
               </div>
             </div>
 
-            {/* Bottom Section: Divider line with small center-aligned institution name */}
-            <div className="w-full mt-4 sm:mt-5 select-none">
+            {/* Bottom Section: Divider line with small center-aligned institution name (minimized margin right below table) */}
+            <div className="w-full mt-2 sm:mt-2.5 select-none">
               <div className="w-full border-t border-stone-800" />
               <div
                 id={`footer-institution-${page.pageIndex}`}
-                className="pt-2 text-center text-xs sm:text-[13px] text-stone-800 font-medium tracking-[0.25em]"
+                className="pt-1 sm:pt-1.5 text-center text-xs sm:text-[13px] text-stone-800 font-medium tracking-[0.25em]"
               >
                 {trainingInfo.institution || '상지여자중학교'}
               </div>

@@ -57,7 +57,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-sm font-bold text-stone-900">상지여자중학교 연수 등록부</h1>
                 <span className="text-[11px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-                  A4 공문서 규격
+                  A4 공문서 규격 (위 15mm / 좌우 15mm / 아래 10mm)
                 </span>
                 {cloudSyncSlot}
               </div>
@@ -151,22 +151,22 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
             <div className="h-3 w-px bg-stone-200" />
 
-            {/* Row height selector */}
+            {/* Row height selector: only normal (표준) and spacious (넓게) */}
             <div className="flex items-center gap-1.5">
               <span className="text-stone-500 text-[11px]">행 높이:</span>
-              {(['compact', 'normal', 'spacious'] as RowHeight[]).map((height) => (
+              {(['normal', 'spacious'] as const).map((height) => (
                 <button
                   key={height}
                   id={`toolbar-row-height-${height}-btn`}
                   type="button"
                   onClick={() => onChangeConfig({ rowHeight: height })}
-                  className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
+                  className={`px-2.5 py-0.5 rounded text-[11px] font-medium transition-colors ${
                     config.rowHeight === height
                       ? 'bg-stone-800 text-white'
                       : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                   }`}
                 >
-                  {height === 'compact' ? '좁게' : height === 'normal' ? '표준(15줄)' : '넓게'}
+                  {height === 'normal' ? '표준' : '넓게'}
                 </button>
               ))}
             </div>
@@ -216,16 +216,16 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
             <div className="h-3 w-px bg-stone-200" />
 
-            {/* Toggle 15 rows fill */}
-            <label className="flex items-center gap-1.5 cursor-pointer select-none text-[11px]" title="한 장당 15줄 양식을 유지하여 빈칸을 자동으로 채웁니다">
+            {/* Toggle fill empty rows automatically */}
+            <label className="flex items-center gap-1.5 cursor-pointer select-none text-[11px]" title="A4 용지 규격과 선택된 행 높이에 맞추어 페이지 서명칸을 자동으로 분할하고 빈칸을 채웁니다">
               <input
-                id="toolbar-toggle-fill-15-rows"
+                id="toolbar-toggle-fill-rows"
                 type="checkbox"
                 checked={config.fillEmptyRows !== false}
                 onChange={(e) => onChangeConfig({ fillEmptyRows: e.target.checked })}
                 className="rounded text-stone-800 focus:ring-stone-400"
               />
-              <span>15줄 양식 채우기</span>
+              <span>자동 서식 채우기 (여백에 맞춰 자동 분할)</span>
             </label>
           </div>
 

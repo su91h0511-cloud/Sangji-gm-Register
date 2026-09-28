@@ -18,6 +18,7 @@ import { SignatureModal } from './components/SignatureModal';
 import { BulkImportModal } from './components/BulkImportModal';
 import { PrintGuideModal } from './components/PrintGuideModal';
 import { CloudSyncBadge } from './components/CloudSyncBadge';
+import { SyncStatusToast } from './components/SyncStatusToast';
 import { useCloudSync } from './hooks/useCloudSync';
 import { FileText, Users, Loader2 } from 'lucide-react';
 
@@ -440,6 +441,14 @@ export default function App() {
         isOpen={isPrintGuideOpen}
         onClose={() => setIsPrintGuideOpen(false)}
         onPrintNow={handlePrint}
+      />
+
+      {/* Real-time Cloud Sync Status Toast */}
+      <SyncStatusToast
+        status={syncStatus}
+        lastSyncedAt={lastSyncedAt}
+        errorMessage={errorMessage}
+        onRetry={forceSave}
       />
 
       {/* PDF Export Progress Overlay Modal */}

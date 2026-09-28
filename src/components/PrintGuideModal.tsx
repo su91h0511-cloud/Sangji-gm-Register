@@ -48,8 +48,8 @@ export const PrintGuideModal: React.FC<PrintGuideModalProps> = ({
           <div className="flex items-start gap-2.5 p-2.5 bg-stone-50 rounded-lg border border-stone-200">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <strong className="text-stone-800 block">여백 설정: 기본(Default) 또는 없음(None)</strong>
-              <span>서식 자체에 적정 규격 여백이 지정되어 있어 기본값 또는 최소 여백을 권장합니다.</span>
+              <strong className="text-stone-800 block">용지 여백: 위쪽 15mm, 좌·우 15mm, 하단 10mm</strong>
+              <span>서식 규격에 맞추어 위쪽 15mm, 좌·우 15mm, 하단 10mm 여백이 자동 적용되어 있으며, 표 끝 줄과 하단 기관명 사이의 간격이 최소화되어 있습니다.</span>
             </div>
           </div>
 

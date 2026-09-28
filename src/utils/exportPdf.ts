@@ -53,13 +53,16 @@ export async function exportTableToPdf(options: ExportPdfOptions = {}): Promise<
         return element.classList.contains('no-print');
       },
       onclone: (clonedDoc) => {
-        // Remove screen card borders and drop shadows in cloned document
+        // Remove screen card borders and drop shadows in cloned document; apply top 15mm, sides 15mm, and bottom 10mm margins
         const clonedPages = clonedDoc.querySelectorAll<HTMLElement>('.a4-page');
         clonedPages.forEach((p) => {
           p.style.boxShadow = 'none';
           p.style.border = 'none';
           p.style.margin = '0';
-          p.style.padding = '32px 36px';
+          p.style.paddingTop = '15mm';
+          p.style.paddingLeft = '15mm';
+          p.style.paddingRight = '15mm';
+          p.style.paddingBottom = '10mm';
         });
 
         // Hide all no-print elements in the cloned DOM
