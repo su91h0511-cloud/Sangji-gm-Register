@@ -56,14 +56,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-sm font-bold text-stone-900">상지여자중학교 연수 등록부</h1>
-                <span className="text-[11px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-                  A4 공문서 규격 (위 15mm / 좌우 15mm / 아래 10mm)
-                </span>
                 {cloudSyncSlot}
               </div>
-              <p className="text-[11px] text-stone-500 hidden sm:block">
-                명단 자동 불러오기 · 등록부 실시간 연동 · A4 인쇄 최적화
-              </p>
             </div>
           </div>
 
@@ -120,37 +114,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         {/* Secondary options row */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 mt-2 border-t border-stone-100 text-xs text-stone-600">
           <div className="flex flex-wrap items-center gap-3">
-            {/* Add row options */}
-            <div className="flex items-center gap-1">
-              <span className="text-stone-500 text-[11px]">행 추가:</span>
-              <button
-                id="toolbar-add-1-row-btn"
-                type="button"
-                onClick={() => onAddRows(1)}
-                className="px-2 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-[11px] font-medium transition-colors"
-              >
-                +1줄
-              </button>
-              <button
-                id="toolbar-add-5-rows-btn"
-                type="button"
-                onClick={() => onAddRows(5)}
-                className="px-2 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-[11px] font-medium transition-colors"
-              >
-                +5줄
-              </button>
-              <button
-                id="toolbar-add-10-rows-btn"
-                type="button"
-                onClick={() => onAddRows(10)}
-                className="px-2 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-[11px] font-medium transition-colors"
-              >
-                +10줄
-              </button>
-            </div>
-
-            <div className="h-3 w-px bg-stone-200" />
-
             {/* Row height selector: only normal (표준) and spacious (넓게) */}
             <div className="flex items-center gap-1.5">
               <span className="text-stone-500 text-[11px]">행 높이:</span>

@@ -83,14 +83,56 @@
     break-after: auto !important;
   }
 
-  /* Ensure crisp black table borders in print */
+  /* Ensure crisp black table borders in print and unified 12pt typography */
   .print-table {
     border-collapse: collapse !important;
     width: 100% !important;
+    font-size: 12pt !important;
   }
 
   .print-table th, 
-  .print-table td {
+  .print-table td,
+  .print-table input {
     border-color: #000000 !important;
+    font-size: 12pt !important;
   }
+}
+
+/* Screen and default table 12pt typography */
+.print-table {
+  font-size: 12pt;
+}
+.print-table th,
+.print-table td,
+.print-table input {
+  font-size: 12pt;
+}
+
+/* CloudSyncBadge Save Highlight Keyframes */
+@keyframes syncBadgePop {
+  0% {
+    transform: scale(0.92);
+  }
+  45% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes syncBadgeGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.sync-badge-saved-highlight {
+  animation: syncBadgePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275), syncBadgeGlow 1.4s ease-out;
 }

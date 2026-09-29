@@ -4,6 +4,7 @@ import {
   Trash2,
   ArrowUp,
   ArrowDown,
+  ArrowDownAZ,
   Upload,
   Sparkles,
   ClipboardList,
@@ -30,6 +31,10 @@ interface ParticipantRosterTabProps {
   onInsertRowBelow: (id: string) => void;
   onMoveRow: (id: string, direction: 'up' | 'down') => void;
   onAddRow: () => void;
+  onSortByName?: () => void;
+  onSortByDepartment?: () => void;
+  onSortByGrade?: () => void;
+  onSortByClass?: () => void;
   onClearAll: () => void;
   onLoadSangjiSample: () => void;
   onImportBulk: (items: Participant[], mode: 'replace' | 'append') => void;
@@ -50,6 +55,10 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
   onInsertRowBelow,
   onMoveRow,
   onAddRow,
+  onSortByName,
+  onSortByDepartment,
+  onSortByGrade,
+  onSortByClass,
   onClearAll,
   onLoadSangjiSample,
   onImportBulk,
@@ -216,6 +225,124 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
     onImportBulk(parsed, pasteMode);
     setPasteText('');
     setShowQuickPaste(false);
+  };
+
+  // 참가자 명단 이름순(가나다순) 자동 정렬
+  const handleSortByName = () => {
+    if (onSortByName) {
+      onSortByName();
+    } else {
+      const sorted = [...participants].sort((a, b) => {
+        const nameA = (a.name || '').trim();
+        const nameB = (b.name || '').trim();
+        if (!nameA && !nameB) return 0;
+        if (!nameA) return 1;
+        if (!nameB) return -1;
+        return nameA.localeCompare(nameB, 'ko');
+      });
+      onImportBulk(sorted, 'replace');
+    }
+  };
+
+  // 참가자 명단 소속별(가나다순) 자동 정렬 (소속 같은 경우 이름순 정렬)
+  const handleSortByDepartment = () => {
+    if (onSortByDepartment) {
+      onSortByDepartment();
+    } else {
+      const sorted = [...participants].sort((a, b) => {
+        const deptA = (a.department || '').trim();
+        const deptB = (b.department || '').trim();
+        if (!deptA && !deptB) {
+          return (a.name || '').localeCompare(b.name || '', 'ko');
+        }
+        if (!deptA) return 1;
+        if (!deptB) return -1;
+        const deptCompare = deptA.localeCompare(deptB, 'ko');
+        if (deptCompare !== 0) return deptCompare;
+        return (a.name || '').localeCompare(b.name || '', 'ko');
+      });
+      onImportBulk(sorted, 'replace');
+    }
+  };
+
+  // 참가자 명단 학년순 정렬 (학년 -> 반 -> 이름)
+  const handleSortByGrade = () => {
+    if (onSortByGrade) {
+      onSortByGrade();
+    } else {
+      const compareGradeOrClass = (v1?: string, v2?: string) => {
+        const s1 = (v1 || '').trim();
+        const s2 = (v2 || '').trim();
+        if (!s1 && !s2) return 0;
+        if (!s1) return 1;
+        if (!s2) return -1;
+        const n1 = parseInt(s1.replace(/[^0-9]/g, ''), 10);
+        const n2 = parseInt(s2.replace(/[^0-9]/g, ''), 10);
+        if (!isNaN(n1) && !isNaN(n2)) return n1 - n2;
+        return s1.localeCompare(s2, 'ko');
+      };
+      const sorted = [...participants].sort((a, b) => {
+        const gradeComp = compareGradeOrClass(a.grade, b.grade);
+        if (gradeComp !== 0) return gradeComp;
+        const classComp = compareGradeOrClass(a.classNum, b.classNum);
+        if (classComp !== 0) return classComp;
+        return (a.name || '').localeCompare(b.name || '', 'ko');
+      });
+      onImportBulk(sorted, 'replace');
+    }
+  };
+
+  // 참가자 명단 반별 정렬 (반 -> 학년 -> 이름)
+  const handleSortByClass = () => {
+    if (onSortByClass) {
+      onSortByClass();
+    } else {
+      const compareGradeOrClass = (v1?: string, v2?: string) => {
+        const s1 = (v1 || '').trim();
+        const s2 = (v2 || '').trim();
+        if (!s1 && !s2) return 0;
+        if (!s1) return 1;
+        if (!s2) return -1;
+        const n1 = parseInt(s1.replace(/[^0-9]/g, ''), 10);
+        const n2 = parseInt(s2.replace(/[^0-9]/g, ''), 10);
+        if (!isNaN(n1) && !isNaN(n2)) return n1 - n2;
+        return s1.localeCompare(s2, 'ko');
+      };
+      const sorted = [...participants].sort((a, b) => {
+        const classComp = compareGradeOrClass(a.classNum, b.classNum);
+        if (classComp !== 0) return classComp;
+        const gradeComp = compareGradeOrClass(a.grade, b.grade);
+        if (gradeComp !== 0) return gradeComp;
+        return (a.name || '').localeCompare(b.name || '', 'ko');
+      });
+      onImportBulk(sorted, 'replace');
+    }
+  };
+
+  const getRosterPosFontSize = (val: string = '') => {
+    const len = val.trim().length;
+    if (len <= 3) return 'text-xs sm:text-sm';
+    if (len <= 5) return 'text-[11.5px] sm:text-xs';
+    return 'text-[10px] sm:text-[11px] leading-tight';
+  };
+
+  // 소속 글씨 크기를 이름 글씨 크기와 동일하게 적용
+  const getRosterDeptFontSize = (val: string = '') => {
+    return getRosterNameFontSize(val);
+  };
+
+  const getRosterNameFontSize = (val: string = '') => {
+    const len = val.trim().length;
+    if (len <= 3) return 'text-xs sm:text-sm font-semibold';
+    if (len <= 5) return 'text-[11.5px] sm:text-xs font-semibold';
+    return 'text-[10.5px] sm:text-[11px] font-semibold leading-tight';
+  };
+
+  const getRosterRemarksFontSize = (val: string = '') => {
+    const len = val.trim().length;
+    if (len <= 4) return 'text-xs sm:text-sm';
+    if (len <= 10) return 'text-[11.5px] sm:text-xs';
+    return 'text-[10.5px] sm:text-[11px] leading-tight';
   };
 
   return (
@@ -488,27 +615,66 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
             <thead>
               <tr className="bg-stone-100/80 border-b border-stone-300 text-stone-700 font-bold">
                 <th className="w-12 text-center py-2.5 px-2 border-r border-stone-200">연번</th>
-                <th className={`${isParents ? 'w-44' : 'w-48'} py-2.5 px-3 border-r border-stone-200`}>
-                  소속
+                <th className={`${isParents ? 'w-44' : 'w-48'} py-2.5 px-3 border-r border-stone-200 text-center`}>
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="flex-1 text-center">소속</span>
+                    <button
+                      type="button"
+                      onClick={handleSortByDepartment}
+                      title="소속별(가나다순) 자동 정렬"
+                      className="p-1 rounded hover:bg-stone-200 text-stone-500 hover:text-stone-800 transition-colors flex items-center gap-0.5 text-[11px] font-normal shrink-0"
+                    >
+                      <ArrowDownAZ className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </th>
                 {isParents && (
                   <>
-                    <th className="w-20 text-center py-2.5 px-2 border-r border-stone-200">학년</th>
-                    <th className="w-20 text-center py-2.5 px-2 border-r border-stone-200">반</th>
+                    <th className="w-20 text-center py-2.5 px-2 border-r border-stone-200">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="flex-1 text-center">학년</span>
+                        <button
+                          type="button"
+                          onClick={handleSortByGrade}
+                          title="학년순(학년→반→이름) 자동 정렬"
+                          className="p-1 rounded hover:bg-stone-200 text-stone-500 hover:text-stone-800 transition-colors flex items-center text-[11px] font-normal shrink-0"
+                        >
+                          <ArrowDownAZ className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </th>
+                    <th className="w-20 text-center py-2.5 px-2 border-r border-stone-200">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="flex-1 text-center">반</span>
+                        <button
+                          type="button"
+                          onClick={handleSortByClass}
+                          title="반별(반→학년→이름) 자동 정렬"
+                          className="p-1 rounded hover:bg-stone-200 text-stone-500 hover:text-stone-800 transition-colors flex items-center text-[11px] font-normal shrink-0"
+                        >
+                          <ArrowDownAZ className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </th>
                   </>
                 )}
                 {!isParents && (
                   <th className="w-36 py-2.5 px-3 border-r border-stone-200">직위</th>
                 )}
                 <th className={`${isParents ? 'w-44' : 'w-40'} py-2.5 px-3 border-r border-stone-200`}>
-                  {isParents ? '학생 이름' : '성명'}
+                  <div className="flex items-center justify-between gap-1">
+                    <span>{isParents ? '학생 이름' : '성명'}</span>
+                    <button
+                      type="button"
+                      onClick={handleSortByName}
+                      title="이름순(가나다순) 자동 정렬"
+                      className="p-1 rounded hover:bg-stone-200 text-stone-500 hover:text-stone-800 transition-colors flex items-center gap-0.5 text-[11px] font-normal"
+                    >
+                      <ArrowDownAZ className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </th>
-                {isParents && (
-                  <th className="w-36 text-center py-2.5 px-2 border-r border-stone-200 text-stone-800">
-                    학부모 서명
-                  </th>
-                )}
-                <th className={`py-2.5 px-3 border-r border-stone-200 ${isParents ? 'w-48 text-stone-700 font-bold' : 'text-amber-950 font-bold bg-amber-50/50'}`}>
+                <th className={`py-2.5 px-3 border-r border-stone-200 ${isParents ? 'text-stone-700 font-bold' : 'text-amber-950 font-bold bg-amber-50/50'}`}>
                   {isParents ? '비고' : '비고(복무사항 입력)'}
                 </th>
                 <th className="w-28 text-center py-2.5 px-2">순서 / 관리</th>
@@ -522,14 +688,17 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
                     {index + 1}
                   </td>
 
-                  {/* 소속 부서 / 학부모회 */}
-                  <td className="p-1 border-r border-stone-200">
+                  {/* 소속 부서 / 학부모회 (가운데 정렬 + 직위와 동일 글씨 크기) */}
+                  <td className="p-1 border-r border-stone-200 text-center">
                     <input
                       type="text"
                       value={p.department}
                       onChange={(e) => onUpdateParticipant(p.id, 'department', e.target.value)}
                       placeholder={isParents ? '학부모회 등' : '교무기획부, 교육연구부 등'}
-                      className="w-full px-2 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 rounded text-stone-900"
+                      title={p.department}
+                      className={`w-full text-center px-2 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 rounded text-stone-900 transition-all ${getRosterDeptFontSize(
+                        p.department
+                      )}`}
                     />
                   </td>
 
@@ -542,7 +711,7 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
                           value={p.grade || ''}
                           onChange={(e) => onUpdateParticipant(p.id, 'grade', e.target.value)}
                           placeholder="학년"
-                          className="w-full text-center px-1 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 rounded text-stone-900"
+                          className="w-full text-center px-1 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 rounded text-stone-900 text-xs sm:text-sm"
                         />
                       </td>
                       <td className="p-1 border-r border-stone-200">
@@ -551,7 +720,7 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
                           value={p.classNum || ''}
                           onChange={(e) => onUpdateParticipant(p.id, 'classNum', e.target.value)}
                           placeholder="반"
-                          className="w-full text-center px-1 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 rounded text-stone-900"
+                          className="w-full text-center px-1 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 rounded text-stone-900 text-xs sm:text-sm"
                         />
                       </td>
                     </>
@@ -565,7 +734,10 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
                         value={p.position}
                         onChange={(e) => onUpdateParticipant(p.id, 'position', e.target.value)}
                         placeholder="부장교사, 교사 등"
-                        className="w-full px-2 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 rounded text-stone-900"
+                        title={p.position}
+                        className={`w-full px-2 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 rounded text-stone-900 transition-all ${getRosterPosFontSize(
+                          p.position
+                        )}`}
                       />
                     </td>
                   )}
@@ -577,48 +749,12 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
                       value={p.name}
                       onChange={(e) => onUpdateParticipant(p.id, 'name', e.target.value)}
                       placeholder={isParents ? '학생 이름' : '성명'}
-                      className="w-full px-2 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 rounded font-semibold text-stone-950"
+                      title={p.name}
+                      className={`w-full px-2 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 focus:ring-stone-400 rounded font-semibold text-stone-950 transition-all ${getRosterNameFontSize(
+                        p.name
+                      )}`}
                     />
                   </td>
-
-                  {/* 학부모 서명 (학부모) */}
-                  {isParents && (
-                    <td className="p-1 border-r border-stone-200 text-center">
-                      {p.signature ? (
-                        <div
-                          onClick={() => onOpenSignatureModal?.(p)}
-                          className="cursor-pointer inline-flex items-center justify-center p-0.5 rounded hover:bg-amber-100/60 transition-colors"
-                          title="클릭하여 학부모 서명 수정"
-                        >
-                          {p.signature.startsWith('data:image') ? (
-                            <img
-                              src={p.signature}
-                              alt="학부모 서명"
-                              className="h-6 max-w-[80px] object-contain filter contrast-125"
-                            />
-                          ) : p.signature.startsWith('[') ? (
-                            <span className="inline-flex items-center justify-center border border-red-600 text-red-600 rounded px-1.5 py-0.5 text-[11px] font-bold bg-red-50/50">
-                              {p.signature.replace(/[\[\]]/g, '')} 印
-                            </span>
-                          ) : (
-                            <span className="font-serif italic text-xs font-semibold text-stone-900">
-                              {p.signature}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => onOpenSignatureModal?.(p)}
-                          className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-stone-300 text-stone-500 hover:border-amber-500 hover:text-amber-800 hover:bg-amber-50/50 transition-colors"
-                          title="학부모 서명 입력"
-                        >
-                          <PenLine className="w-3 h-3 text-stone-400" />
-                          학부모 서명
-                        </button>
-                      )}
-                    </td>
-                  )}
 
                   {/* 비고란 */}
                   <td className="p-1 border-r border-stone-200">
@@ -629,13 +765,14 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
                       placeholder={
                         isParents
                           ? '비고 입력'
-                          : '출장, 조퇴, 연가 등 복무사항 입력 (입력 시 등록부 참석 현황 총원에서 제외)'
+                          : '출장, 조퇴, 연가 등 복무사항 입력'
                       }
-                      className={`w-full px-2 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 rounded ${
+                      title={p.remarks || ''}
+                      className={`w-full px-2 py-1 bg-transparent hover:bg-stone-100/80 focus:bg-white focus:outline-none focus:ring-1 rounded transition-all ${
                         isParents
                           ? 'focus:ring-stone-400 text-stone-800'
                           : 'focus:ring-amber-500 text-stone-800'
-                      }`}
+                      } ${getRosterRemarksFontSize(p.remarks)}`}
                     />
                   </td>
 
@@ -683,7 +820,7 @@ export const ParticipantRosterTab: React.FC<ParticipantRosterTabProps> = ({
 
               {participants.length === 0 && (
                 <tr>
-                  <td colSpan={isParents ? 8 : 6} className="py-12 text-center text-stone-400">
+                  <td colSpan={isParents ? 7 : 6} className="py-12 text-center text-stone-400">
                     <p className="text-sm">입력된 참가자가 없습니다.</p>
                     <div className="mt-3 flex items-center justify-center gap-2">
                       <button

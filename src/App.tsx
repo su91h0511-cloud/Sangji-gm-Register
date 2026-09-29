@@ -19,6 +19,7 @@ import { BulkImportModal } from './components/BulkImportModal';
 import { PrintGuideModal } from './components/PrintGuideModal';
 import { CloudSyncBadge } from './components/CloudSyncBadge';
 import { SyncStatusToast } from './components/SyncStatusToast';
+import { PdfErrorModal } from './components/PdfErrorModal';
 import { useCloudSync } from './hooks/useCloudSync';
 import { FileText, Users, Loader2 } from 'lucide-react';
 
@@ -26,6 +27,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'document' | 'roster'>('roster');
   const [selectedGroup, setSelectedGroup] = useState<TargetGroup>('teacher');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [pdfErrorMessage, setPdfErrorMessage] = useState<string | null>(null);
 
   // Real-time Cloud Sync with Firestore
   const {
@@ -161,6 +163,111 @@ export default function App() {
     }));
   };
 
+  // Sort participants by name in Korean alphabetical (가나다) order
+  const handleSortByName = () => {
+    setGroupsData((prev) => {
+      const currentList = [...prev[selectedGroup].participants];
+      currentList.sort((a, b) => {
+        const nameA = (a.name || '').trim();
+        const nameB = (b.name || '').trim();
+        if (!nameA && !nameB) return 0;
+        if (!nameA) return 1;
+        if (!nameB) return -1;
+        return nameA.localeCompare(nameB, 'ko');
+      });
+      return {
+        ...prev,
+        [selectedGroup]: {
+          ...prev[selectedGroup],
+          participants: currentList,
+        },
+      };
+    });
+  };
+
+  // Sort participants by department in Korean alphabetical order (and then by name)
+  const handleSortByDepartment = () => {
+    setGroupsData((prev) => {
+      const currentList = [...prev[selectedGroup].participants];
+      currentList.sort((a, b) => {
+        const deptA = (a.department || '').trim();
+        const deptB = (b.department || '').trim();
+        if (!deptA && !deptB) {
+          return (a.name || '').localeCompare(b.name || '', 'ko');
+        }
+        if (!deptA) return 1;
+        if (!deptB) return -1;
+        const deptCompare = deptA.localeCompare(deptB, 'ko');
+        if (deptCompare !== 0) return deptCompare;
+        return (a.name || '').localeCompare(b.name || '', 'ko');
+      });
+      return {
+        ...prev,
+        [selectedGroup]: {
+          ...prev[selectedGroup],
+          participants: currentList,
+        },
+      };
+    });
+  };
+
+  // Helper for numeric/string sorting of grade/class
+  const compareGradeOrClass = (v1?: string, v2?: string) => {
+    const s1 = (v1 || '').trim();
+    const s2 = (v2 || '').trim();
+    if (!s1 && !s2) return 0;
+    if (!s1) return 1;
+    if (!s2) return -1;
+    const n1 = parseInt(s1.replace(/[^0-9]/g, ''), 10);
+    const n2 = parseInt(s2.replace(/[^0-9]/g, ''), 10);
+    if (!isNaN(n1) && !isNaN(n2)) {
+      return n1 - n2;
+    }
+    return s1.localeCompare(s2, 'ko');
+  };
+
+  // Sort participants by grade (학년 -> 반 -> 이름)
+  const handleSortByGrade = () => {
+    setGroupsData((prev) => {
+      const currentList = [...prev[selectedGroup].participants];
+      currentList.sort((a, b) => {
+        const gradeComp = compareGradeOrClass(a.grade, b.grade);
+        if (gradeComp !== 0) return gradeComp;
+        const classComp = compareGradeOrClass(a.classNum, b.classNum);
+        if (classComp !== 0) return classComp;
+        return (a.name || '').localeCompare(b.name || '', 'ko');
+      });
+      return {
+        ...prev,
+        [selectedGroup]: {
+          ...prev[selectedGroup],
+          participants: currentList,
+        },
+      };
+    });
+  };
+
+  // Sort participants by class (반 -> 학년 -> 이름)
+  const handleSortByClass = () => {
+    setGroupsData((prev) => {
+      const currentList = [...prev[selectedGroup].participants];
+      currentList.sort((a, b) => {
+        const classComp = compareGradeOrClass(a.classNum, b.classNum);
+        if (classComp !== 0) return classComp;
+        const gradeComp = compareGradeOrClass(a.grade, b.grade);
+        if (gradeComp !== 0) return gradeComp;
+        return (a.name || '').localeCompare(b.name || '', 'ko');
+      });
+      return {
+        ...prev,
+        [selectedGroup]: {
+          ...prev[selectedGroup],
+          participants: currentList,
+        },
+      };
+    });
+  };
+
   // Clear all rows in current group
   const handleClearAll = () => {
     const currentGroupLabel =
@@ -268,17 +375,18 @@ export default function App() {
     }, 100);
   };
 
-  // PDF Export handler using jsPDF + html2canvas
+  // PDF Export handler using jsPDF + html2canvas-pro
   const handleDownloadPdf = async () => {
     try {
+      setPdfErrorMessage(null);
       setIsDownloadingPdf(true);
-      setPdfProgressText('문서 준비 중...');
+      setPdfProgressText('문서 서식 준비 중...');
 
-      // If currently on roster tab, switch to document tab first so the A4 pages are visible in DOM
+      // If currently on roster tab, switch to document tab first so the A4 pages are rendered in DOM
       if (activeTab !== 'document') {
         setActiveTab('document');
-        // Give time for DOM layout to settle
-        await new Promise((resolve) => setTimeout(resolve, 250));
+        // Give adequate time for React state and DOM layout to settle
+        await new Promise((resolve) => setTimeout(resolve, 300));
       }
 
       const currentGroupLabel =
@@ -294,9 +402,15 @@ export default function App() {
           setPdfProgressText(text);
         },
       });
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('PDF export failed:', err);
-      alert('PDF 생성 중 문제가 발생했습니다. 다시 시도해 주세요.');
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'string'
+          ? err
+          : 'A4 PDF 변환 과정에서 일시적인 문제가 발생했습니다.';
+      setPdfErrorMessage(errorMsg);
     } finally {
       setIsDownloadingPdf(false);
       setPdfProgressText('');
@@ -352,9 +466,6 @@ export default function App() {
             >
               <Users className={`w-4 h-4 ${activeTab === 'roster' ? 'text-amber-400' : 'text-stone-500'}`} />
               <span>명단 입력 및 관리</span>
-              <span className="hidden sm:inline-block text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200/80 font-normal">
-                교사·교직원·학부모·교직원(강사포함)·협의회 구분
-              </span>
             </button>
 
             <button
@@ -423,6 +534,10 @@ export default function App() {
               onInsertRowBelow={handleInsertRowBelow}
               onMoveRow={handleMoveRow}
               onAddRow={() => handleAddRows(1)}
+              onSortByName={handleSortByName}
+              onSortByDepartment={handleSortByDepartment}
+              onSortByGrade={handleSortByGrade}
+              onSortByClass={handleSortByClass}
               onClearAll={handleClearAll}
               onLoadSangjiSample={handleLoadSample}
               onImportBulk={handleImportParticipants}
@@ -455,6 +570,21 @@ export default function App() {
         isOpen={isPrintGuideOpen}
         onClose={() => setIsPrintGuideOpen(false)}
         onPrintNow={handlePrint}
+      />
+
+      {/* PDF Export Error Handling Modal */}
+      <PdfErrorModal
+        isOpen={Boolean(pdfErrorMessage)}
+        errorMessage={pdfErrorMessage || ''}
+        onClose={() => setPdfErrorMessage(null)}
+        onRetry={() => {
+          setPdfErrorMessage(null);
+          handleDownloadPdf();
+        }}
+        onPrintFallback={() => {
+          setPdfErrorMessage(null);
+          handlePrint();
+        }}
       />
 
       {/* Real-time Cloud Sync Status Toast */}

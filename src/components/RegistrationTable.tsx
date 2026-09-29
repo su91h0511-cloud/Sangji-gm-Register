@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Participant, TrainingInfo, FormConfig, TargetGroup, AllGroupsData } from '../types';
 import { TrainingHeaderBox } from './TrainingHeaderBox';
 import { GroupSelectorBar } from './GroupSelectorBar';
@@ -126,6 +126,153 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
     ? participants.length
     : participants.filter((p) => !p.remarks || p.remarks.trim() === '').length;
 
+  // 입력 데이터 내용(길이)을 분석하여 최적의 열 너비(%) 자동 계산
+  const columnWidths = useMemo(() => {
+    let maxDept = 0;
+    let maxPos = 0;
+    let maxName = 0;
+    let maxRemark = 0;
+
+    participants.forEach((p) => {
+      const d = (p.department || '').trim().length;
+      const pos = (p.position || '').trim().length;
+      const n = (p.name || '').trim().length;
+      const r = (p.remarks || '').trim().length;
+
+      if (d > maxDept) maxDept = d;
+      if (pos > maxPos) maxPos = pos;
+      if (n > maxName) maxName = n;
+      if (r > maxRemark) maxRemark = r;
+    });
+
+    if (isParents) {
+      // 학부모 등록부 열 너비 분배
+      const noWidth = '6%';
+      const gradeWidth = '7.5%';
+      const classWidth = '7.5%';
+      const fixedBase = 6 + 7.5 + 7.5; // 21%
+
+      const remarkWeight = !config.showRemarks
+        ? 0
+        : maxRemark === 0
+        ? 8
+        : maxRemark <= 3
+        ? 12
+        : maxRemark <= 6
+        ? 16
+        : 20;
+
+      const remaining = 100 - (fixedBase + remarkWeight);
+
+      // 소속 칸 내용에 맞춘 폭 (maxDept 기반 유동 조절)
+      let deptPct: number;
+      if (maxDept === 0) {
+        deptPct = 16;
+      } else if (maxDept <= 2) {
+        deptPct = 18;
+      } else if (maxDept <= 4) {
+        deptPct = 23;
+      } else if (maxDept <= 6) {
+        deptPct = 28;
+      } else if (maxDept <= 8) {
+        deptPct = 33;
+      } else {
+        deptPct = 37;
+      }
+
+      let namePct = maxName <= 3 ? 18 : maxName <= 4 ? 20 : 23;
+
+      const minSignPct = 24;
+      const maxAllocatable = remaining - minSignPct;
+
+      if (deptPct + namePct > maxAllocatable) {
+        const ratio = maxAllocatable / (deptPct + namePct);
+        deptPct = Math.round(deptPct * ratio);
+        namePct = Math.round(namePct * ratio);
+      }
+
+      const signPct = remaining - (deptPct + namePct);
+
+      return {
+        no: noWidth,
+        dept: `${deptPct}%`,
+        grade: gradeWidth,
+        classNum: classWidth,
+        name: `${namePct}%`,
+        signature: `${signPct}%`,
+        remarks: `${remarkWeight}%`,
+      };
+    } else {
+      // 교직원/협의회/기타 등록부 열 너비 분배
+      const noWidth = '6%';
+      const remarkWeight = !config.showRemarks
+        ? 0
+        : maxRemark === 0
+        ? 8
+        : maxRemark <= 3
+        ? 12
+        : maxRemark <= 6
+        ? 16
+        : 20;
+
+      const remaining = 100 - (6 + remarkWeight);
+
+      // 소속 칸 내용(글자 수)에 맞춘 폭 조절
+      let deptPct: number;
+      if (maxDept === 0) {
+        deptPct = 15;
+      } else if (maxDept <= 2) {
+        deptPct = 17;
+      } else if (maxDept <= 4) {
+        deptPct = 22;
+      } else if (maxDept <= 6) {
+        deptPct = 27;
+      } else if (maxDept <= 8) {
+        deptPct = 32;
+      } else {
+        deptPct = 36;
+      }
+
+      // 직위 칸 내용에 맞춘 폭
+      let posPct = maxPos <= 2 ? 14 : maxPos <= 4 ? 17 : 20;
+
+      // 성명 칸 내용에 맞춘 폭
+      let namePct = maxName <= 3 ? 16 : maxName <= 4 ? 18 : 21;
+
+      // 서명 칸 최소 너비 확보 및 정규화
+      const minSignPct = 22;
+      const maxAllocatable = remaining - minSignPct;
+      let subtotal = deptPct + posPct + namePct;
+
+      if (subtotal > maxAllocatable) {
+        const ratio = maxAllocatable / subtotal;
+        deptPct = Math.round(deptPct * ratio);
+        posPct = Math.round(posPct * ratio);
+        namePct = Math.round(namePct * ratio);
+        subtotal = deptPct + posPct + namePct;
+      }
+
+      const signPct = remaining - subtotal;
+
+      return {
+        no: noWidth,
+        dept: `${deptPct}%`,
+        position: `${posPct}%`,
+        name: `${namePct}%`,
+        signature: `${signPct}%`,
+        remarks: `${remarkWeight}%`,
+      };
+    }
+  }, [participants, isParents, config.showRemarks]);
+
+  // 표 안에 내용 pt 12 (12pt = 16px) 통일
+  const getPositionFontSize = (_val: string = '') => 'text-[12pt]';
+  const getDeptFontSize = (_val: string = '') => 'text-[12pt]';
+  const getNameFontSize = (_val: string = '') => 'text-[12pt] font-semibold';
+  const getGradeClassFontSize = (_val: string = '') => 'text-[12pt]';
+  const getRemarksFontSize = (val: string = '') =>
+    val.trim().length <= 3 ? 'text-[12pt] font-medium text-center' : 'text-[12pt] text-left';
+
   return (
     <div className="w-full flex flex-col items-center">
       {/* Top Group Selector Bar for Document View (Hidden in print) */}
@@ -178,43 +325,58 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
 
               {/* Main Registration Table */}
               <div className="w-full overflow-x-auto print:overflow-visible">
-                <table className="print-table w-full border-collapse border-2 border-stone-900 text-xs sm:text-sm text-center">
+                <table className="print-table w-full table-fixed border-collapse border-2 border-stone-900 text-[12pt] text-center">
+                  <colgroup>
+                    <col style={{ width: columnWidths.no }} />
+                    <col style={{ width: columnWidths.dept }} />
+                    {isParents ? (
+                      <>
+                        <col style={{ width: columnWidths.grade }} />
+                        <col style={{ width: columnWidths.classNum }} />
+                      </>
+                    ) : (
+                      <col style={{ width: columnWidths.position }} />
+                    )}
+                    <col style={{ width: columnWidths.name }} />
+                    <col style={{ width: columnWidths.signature }} />
+                    {config.showRemarks && <col style={{ width: columnWidths.remarks }} />}
+                  </colgroup>
                   <thead>
-                    <tr className="bg-stone-100/90 text-stone-900 font-bold border-b-2 border-stone-900 h-9 sm:h-10">
-                      <th className="w-12 border-r border-stone-800 py-1.5 px-1 whitespace-nowrap">
+                    <tr className="bg-stone-100/90 text-stone-900 font-bold border-b-2 border-stone-900 h-9 sm:h-10 text-[12pt]">
+                      <th className="border-r border-stone-800 py-1.5 px-1 whitespace-nowrap text-[12pt]">
                         연번
                       </th>
-                      <th className={`${isParents ? 'w-36 sm:w-44' : 'w-40 sm:w-52'} border-r border-stone-800 py-1.5 px-2 whitespace-nowrap`}>
+                      <th className="border-r border-stone-800 py-1.5 px-2 whitespace-nowrap text-[12pt]">
                         소속
                       </th>
                       {isParents ? (
                         <>
-                          <th className="w-16 sm:w-20 border-r border-stone-800 py-1.5 px-1 whitespace-nowrap">
+                          <th className="border-r border-stone-800 py-1.5 px-1 whitespace-nowrap text-[12pt]">
                             학년
                           </th>
-                          <th className="w-16 sm:w-20 border-r border-stone-800 py-1.5 px-1 whitespace-nowrap">
+                          <th className="border-r border-stone-800 py-1.5 px-1 whitespace-nowrap text-[12pt]">
                             반
                           </th>
                         </>
                       ) : (
-                        <th className="w-24 sm:w-28 border-r border-stone-800 py-1.5 px-1 whitespace-nowrap">
+                        <th className="border-r border-stone-800 py-1.5 px-1 whitespace-nowrap text-[12pt]">
                           직위
                         </th>
                       )}
-                      <th className={`${isParents ? 'w-32 sm:w-40' : 'w-28 sm:w-32'} border-r border-stone-800 py-1.5 px-2 whitespace-nowrap`}>
+                      <th className="border-r border-stone-800 py-1.5 px-2 whitespace-nowrap text-[12pt]">
                         {isParents ? '학생 이름' : '성명'}
                       </th>
-                      <th className={`${isParents ? 'w-36 sm:w-48' : 'w-32 sm:w-36'} border-r border-stone-800 py-1.5 px-2 whitespace-nowrap`}>
+                      <th className="border-r border-stone-800 py-1.5 px-2 whitespace-nowrap text-[12pt]">
                         {isParents ? '학부모 서명' : '서명'}
                       </th>
                       {config.showRemarks && (
-                        <th className="border-r border-stone-800 py-1.5 px-2 whitespace-nowrap">
+                        <th className="border-r border-stone-800 py-1.5 px-2 whitespace-nowrap text-[12pt]">
                           비고
                         </th>
                       )}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="text-[12pt]">
                     {page.rows.map(({ participant, displayNo, isPlaceholder }, rowIndex) => {
                       const rowHeightClass = getRowHeightClass(isFirstPage);
                       const isEven = rowIndex % 2 === 1;
@@ -225,24 +387,24 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                             key={`placeholder-${page.pageIndex}-${displayNo}`}
                             className={`border-b border-stone-400 ${rowHeightClass} ${
                               isEven ? 'bg-stone-50/30 print:bg-transparent' : ''
-                            }`}
+                            } text-[12pt]`}
                           >
-                            <td className="border-r border-stone-400 font-medium text-stone-500 select-none">
+                            <td className="border-r border-stone-400 font-medium text-stone-500 select-none text-[12pt]">
                               {displayNo}
                             </td>
-                            <td className="border-r border-stone-400 p-0.5 text-center"></td>
+                            <td className="border-r border-stone-400 p-0.5 text-center text-[12pt]"></td>
                             {isParents ? (
                               <>
-                                <td className="border-r border-stone-400 p-0.5 text-center"></td>
-                                <td className="border-r border-stone-400 p-0.5 text-center"></td>
+                                <td className="border-r border-stone-400 p-0.5 text-center text-[12pt]"></td>
+                                <td className="border-r border-stone-400 p-0.5 text-center text-[12pt]"></td>
                               </>
                             ) : (
-                              <td className="border-r border-stone-400 p-0.5 text-center"></td>
+                              <td className="border-r border-stone-400 p-0.5 text-center text-[12pt]"></td>
                             )}
-                            <td className="border-r border-stone-400 p-0.5 text-center"></td>
-                            <td className="border-r border-stone-400 p-0.5 text-center"></td>
+                            <td className="border-r border-stone-400 p-0.5 text-center text-[12pt]"></td>
+                            <td className="border-r border-stone-400 p-0.5 text-center text-[12pt]"></td>
                             {config.showRemarks && (
-                              <td className="border-r border-stone-400 p-0.5 text-center"></td>
+                              <td className="border-r border-stone-400 p-0.5 text-center text-[12pt]"></td>
                             )}
                           </tr>
                         );
@@ -253,15 +415,15 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                           key={participant.id}
                           className={`group border-b border-stone-400 hover:bg-amber-50/20 print:hover:bg-transparent transition-colors ${rowHeightClass} ${
                             isEven ? 'bg-stone-50/40 print:bg-transparent' : ''
-                          }`}
+                          } text-[12pt]`}
                         >
                           {/* 1. 연번 */}
-                          <td className="border-r border-stone-400 font-medium text-stone-700 select-none">
+                          <td className="border-r border-stone-400 font-medium text-stone-700 select-none text-[12pt]">
                             {displayNo}
                           </td>
 
-                          {/* 2. 소속 */}
-                          <td className="border-r border-stone-400 p-0.5 text-left">
+                          {/* 2. 소속 (직위와 동일한 글자 크기 + 가운데 정렬) */}
+                          <td className="border-r border-stone-400 p-0.5 text-center">
                             <input
                               type="text"
                               value={participant.department}
@@ -269,7 +431,10 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                                 onUpdateParticipant(participant.id, 'department', e.target.value)
                               }
                               placeholder={isParents ? '학부모회 등' : '소속 입력'}
-                              className="w-full h-full bg-transparent border-none focus:outline-none focus:bg-white text-stone-900 px-2 py-1"
+                              title={participant.department}
+                              className={`w-full h-full text-center bg-transparent border-none focus:outline-none focus:bg-white text-stone-900 px-1 py-1 transition-all ${getDeptFontSize(
+                                participant.department
+                              )}`}
                             />
                           </td>
 
@@ -284,7 +449,9 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                                     onUpdateParticipant(participant.id, 'grade', e.target.value)
                                   }
                                   placeholder="학년"
-                                  className="w-full h-full text-center bg-transparent border-none focus:outline-none focus:bg-white text-stone-900 py-1"
+                                  className={`w-full h-full text-center bg-transparent border-none focus:outline-none focus:bg-white text-stone-900 py-1 ${getGradeClassFontSize(
+                                    participant.grade
+                                  )}`}
                                 />
                               </td>
                               <td className="border-r border-stone-400 p-0.5">
@@ -295,7 +462,9 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                                     onUpdateParticipant(participant.id, 'classNum', e.target.value)
                                   }
                                   placeholder="반"
-                                  className="w-full h-full text-center bg-transparent border-none focus:outline-none focus:bg-white text-stone-900 py-1"
+                                  className={`w-full h-full text-center bg-transparent border-none focus:outline-none focus:bg-white text-stone-900 py-1 ${getGradeClassFontSize(
+                                    participant.classNum
+                                  )}`}
                                 />
                               </td>
                             </>
@@ -308,12 +477,15 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                                   onUpdateParticipant(participant.id, 'position', e.target.value)
                                 }
                                 placeholder="직위"
-                                className="w-full h-full text-center bg-transparent border-none focus:outline-none focus:bg-white text-stone-900 py-1"
+                                title={participant.position}
+                                className={`w-full h-full text-center bg-transparent border-none focus:outline-none focus:bg-white text-stone-900 py-1 transition-all ${getPositionFontSize(
+                                  participant.position
+                                )}`}
                               />
                             </td>
                           )}
 
-                          {/* 4. 성명 / 학생 이름 */}
+                          {/* 4. 성명 / 학생 이름 (글자 수에 따른 폰트 크기 자동 조절) */}
                           <td className="border-r border-stone-400 p-0.5 font-medium">
                             <input
                               type="text"
@@ -322,7 +494,10 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                                 onUpdateParticipant(participant.id, 'name', e.target.value)
                               }
                               placeholder={isParents ? '학생 이름' : '성명'}
-                              className="w-full h-full text-center bg-transparent border-none focus:outline-none focus:bg-white text-stone-950 font-semibold py-1"
+                              title={participant.name}
+                              className={`w-full h-full text-center bg-transparent border-none focus:outline-none focus:bg-white text-stone-950 font-semibold py-1 transition-all ${getNameFontSize(
+                                participant.name
+                              )}`}
                             />
                           </td>
 
@@ -344,7 +519,7 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                                   {participant.signature.replace(/[\[\]]/g, '')} 印
                                 </span>
                               ) : (
-                                <span className="font-serif italic text-sm font-semibold text-stone-900 tracking-wider">
+                                <span className="font-serif italic text-[12pt] font-semibold text-stone-900 tracking-wider">
                                   {participant.signature}
                                 </span>
                               )
@@ -358,9 +533,9 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                             )}
                           </td>
 
-                          {/* 6. 비고 (선택적) */}
+                          {/* 6. 비고 (선택적: 글자 수에 따른 폰트 크기 및 정렬 자동 조절) */}
                           {config.showRemarks && (
-                            <td className="border-r border-stone-400 p-0.5 text-left">
+                            <td className="border-r border-stone-400 p-0.5">
                               <input
                                 type="text"
                                 value={participant.remarks || ''}
@@ -368,7 +543,10 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                                   onUpdateParticipant(participant.id, 'remarks', e.target.value)
                                 }
                                 placeholder=""
-                                className="w-full h-full bg-transparent border-none focus:outline-none focus:bg-white text-stone-700 px-2 py-1 text-xs"
+                                title={participant.remarks || ''}
+                                className={`w-full h-full bg-transparent border-none focus:outline-none focus:bg-white text-stone-700 px-1.5 py-1 transition-all ${getRemarksFontSize(
+                                  participant.remarks
+                                )}`}
                               />
                             </td>
                           )}
