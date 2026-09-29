@@ -7,6 +7,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { FormConfig, RowHeight, TargetGroup } from '../types';
+import { SangjiEmblem } from './SangjiEmblem';
 
 interface ToolbarProps {
   config: FormConfig;
@@ -50,8 +51,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Brand / App Title */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center font-bold text-sm shadow-xs font-serif">
-              상
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white border border-stone-200 shadow-2xs flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
+              <SangjiEmblem className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
