@@ -52,6 +52,23 @@ export async function exportTableToPdf(options: ExportPdfOptions = {}): Promise<
     const pageEl = pageElements[i];
     onProgress?.(i + 1, totalPages, `${i + 1} / ${totalPages} 페이지 고해상도 변환 중...`);
 
+    // Extract live input values specifically for this page (avoid global document query index offsets)
+    const pageInputs = Array.from(pageEl.querySelectorAll<HTMLInputElement>('input'));
+    pageInputs.forEach((inp, idx) => {
+      inp.setAttribute('data-pdf-idx', String(idx));
+      inp.setAttribute('data-pdf-val', inp.value ?? '');
+      inp.setAttribute('value', inp.value ?? '');
+    });
+
+    const pageTextareas = Array.from(pageEl.querySelectorAll<HTMLTextAreaElement>('textarea'));
+    pageTextareas.forEach((ta, idx) => {
+      ta.setAttribute('data-pdf-idx', String(idx));
+      ta.setAttribute('data-pdf-val', ta.value ?? '');
+      ta.textContent = ta.value ?? '';
+    });
+
+    pageEl.setAttribute('data-pdf-current-page', 'true');
+
     let canvas: HTMLCanvasElement;
     try {
       canvas = await html2canvas(pageEl, {
@@ -71,44 +88,40 @@ export async function exportTableToPdf(options: ExportPdfOptions = {}): Promise<
           );
         },
         onclone: (clonedDoc) => {
-          // Remove screen card borders and drop shadows in cloned document; apply standardized margins
-          const clonedPages = clonedDoc.querySelectorAll<HTMLElement>('.a4-page');
-          clonedPages.forEach((p) => {
-            p.style.boxShadow = 'none';
-            p.style.border = 'none';
-            p.style.margin = '0';
-            p.style.paddingTop = '15mm';
-            p.style.paddingLeft = '15mm';
-            p.style.paddingRight = '15mm';
-            p.style.paddingBottom = '10mm';
-          });
+          // Find the specific page being cloned
+          const clonedPage =
+            clonedDoc.querySelector<HTMLElement>('[data-pdf-current-page="true"]') ||
+            clonedDoc.querySelectorAll<HTMLElement>('.a4-page')[i];
 
-          // Hide all no-print elements in the cloned DOM
-          const noPrintElements = clonedDoc.querySelectorAll<HTMLElement>('.no-print, .print\\:hidden');
+          if (!clonedPage) return;
+
+          // Remove screen card borders and drop shadows in cloned document; apply standardized margins
+          clonedPage.style.boxShadow = 'none';
+          clonedPage.style.border = 'none';
+          clonedPage.style.margin = '0';
+          clonedPage.style.paddingTop = '15mm';
+          clonedPage.style.paddingLeft = '15mm';
+          clonedPage.style.paddingRight = '15mm';
+          clonedPage.style.paddingBottom = '10mm';
+
+          // Hide all no-print elements in the cloned page
+          const noPrintElements = clonedPage.querySelectorAll<HTMLElement>('.no-print, .print\\:hidden');
           noPrintElements.forEach((el) => {
             el.style.display = 'none';
           });
 
-          // Sync input values from the live DOM to cloned DOM
-          const liveInputs = Array.from(document.querySelectorAll<HTMLInputElement>('input'));
-          const clonedInputs = Array.from(clonedDoc.querySelectorAll<HTMLInputElement>('input'));
-          liveInputs.forEach((liveInput, idx) => {
-            if (clonedInputs[idx]) {
-              clonedInputs[idx].value = liveInput.value;
-            }
-          });
-
-          const liveTextareas = Array.from(document.querySelectorAll<HTMLTextAreaElement>('textarea'));
-          const clonedTextareas = Array.from(clonedDoc.querySelectorAll<HTMLTextAreaElement>('textarea'));
-          liveTextareas.forEach((liveTa, idx) => {
-            if (clonedTextareas[idx]) {
-              clonedTextareas[idx].value = liveTa.value;
-            }
-          });
-
-          // Replace text inputs with static divs for crisp font rendering
+          // Replace text inputs with static divs for crisp font rendering using exact scoped values
+          const clonedInputs = Array.from(clonedPage.querySelectorAll<HTMLInputElement>('input'));
           clonedInputs.forEach((input) => {
-            const val = input.value || '';
+            const idxStr = input.getAttribute('data-pdf-idx');
+            const idx = idxStr !== null ? parseInt(idxStr, 10) : -1;
+            const val =
+              (idx >= 0 && pageInputs[idx] ? pageInputs[idx].value : null) ??
+              input.getAttribute('data-pdf-val') ??
+              input.getAttribute('value') ??
+              input.value ??
+              '';
+
             const span = clonedDoc.createElement('div');
             span.textContent = val;
             span.className = input.className;
@@ -122,7 +135,7 @@ export async function exportTableToPdf(options: ExportPdfOptions = {}): Promise<
             span.style.overflow = 'hidden';
             span.style.wordBreak = 'break-all';
 
-            if (input.classList.contains('text-center')) {
+            if (input.classList.contains('text-center') || input.parentElement?.classList.contains('text-center')) {
               span.style.justifyContent = 'center';
               span.style.textAlign = 'center';
             } else if (input.classList.contains('text-right')) {
@@ -137,9 +150,18 @@ export async function exportTableToPdf(options: ExportPdfOptions = {}): Promise<
           });
 
           // Replace textareas with static divs
+          const clonedTextareas = Array.from(clonedPage.querySelectorAll<HTMLTextAreaElement>('textarea'));
           clonedTextareas.forEach((textarea) => {
+            const idxStr = textarea.getAttribute('data-pdf-idx');
+            const idx = idxStr !== null ? parseInt(idxStr, 10) : -1;
+            const val =
+              (idx >= 0 && pageTextareas[idx] ? pageTextareas[idx].value : null) ??
+              textarea.getAttribute('data-pdf-val') ??
+              textarea.value ??
+              '';
+
             const div = clonedDoc.createElement('div');
-            div.textContent = textarea.value || '';
+            div.textContent = val;
             div.className = textarea.className;
             div.style.cssText = textarea.style.cssText;
             div.style.whiteSpace = 'pre-wrap';
@@ -150,6 +172,17 @@ export async function exportTableToPdf(options: ExportPdfOptions = {}): Promise<
     } catch (pageRenderErr) {
       console.error(`Page ${i + 1} rendering error:`, pageRenderErr);
       throw new Error(`${i + 1}페이지 그래픽 렌더링 중 오류가 발생했습니다: ${pageRenderErr instanceof Error ? pageRenderErr.message : String(pageRenderErr)}`);
+    } finally {
+      // Clean up temporary attributes from live DOM
+      pageInputs.forEach((inp) => {
+        inp.removeAttribute('data-pdf-idx');
+        inp.removeAttribute('data-pdf-val');
+      });
+      pageTextareas.forEach((ta) => {
+        ta.removeAttribute('data-pdf-idx');
+        ta.removeAttribute('data-pdf-val');
+      });
+      pageEl.removeAttribute('data-pdf-current-page');
     }
 
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
