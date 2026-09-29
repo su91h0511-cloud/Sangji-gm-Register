@@ -37,8 +37,13 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
   isEditingTitle,
   setIsEditingTitle,
 }) => {
-  // Row height classes tailored for 'normal' (표준) and 'spacious' (넓게) to minimize bottom margin
+  // Row height classes tailored for 'compact' (좁게), 'normal' (표준), and 'spacious' (넓게) to minimize bottom margin
   const getRowHeightClass = (isFirstPage: boolean) => {
+    if (config.rowHeight === 'compact') {
+      return isFirstPage
+        ? 'h-[38px] sm:h-[39px] text-xs'
+        : 'h-[38px] sm:h-[39px] text-xs';
+    }
     if (config.rowHeight === 'spacious') {
       return isFirstPage
         ? 'h-[58px] sm:h-[59px] text-xs sm:text-sm'
@@ -51,14 +56,17 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
   };
 
   // 페이지 서명칸 개수: 상단 여백(15mm) 및 하단 여백(10mm)에 맞추어 용지 전체를 꽉 채우도록 자동 설정
+  // 좁게: 1페이지 20줄, 2페이지부터 24줄 (하단 여백 10mm)
   // 표준: 1페이지 16줄, 2페이지부터 19줄 (하단 여백 10mm)
   // 넓게: 1페이지 13줄, 2페이지부터 15줄 (하단 여백 10mm)
   const getPageCapacity = (pageNum: number) => {
-    const isSpacious = config.rowHeight === 'spacious';
-    if (pageNum === 1) {
-      return isSpacious ? 13 : 16;
+    if (config.rowHeight === 'compact') {
+      return pageNum === 1 ? 20 : 24;
     }
-    return isSpacious ? 15 : 19;
+    if (config.rowHeight === 'spacious') {
+      return pageNum === 1 ? 13 : 15;
+    }
+    return pageNum === 1 ? 16 : 19;
   };
 
   interface PageRow {
@@ -512,7 +520,9 @@ export const RegistrationTable: React.FC<RegistrationTableProps> = ({
                                 <img
                                   src={participant.signature}
                                   alt={isParents ? '학부모 서명' : '서명'}
-                                  className="h-8 max-w-[105px] mx-auto object-contain filter contrast-125"
+                                  className={`${
+                                    config.rowHeight === 'compact' ? 'max-h-6' : 'h-8'
+                                  } max-w-[105px] mx-auto object-contain filter contrast-125`}
                                 />
                               ) : participant.signature.startsWith('[') ? (
                                 <span className="inline-flex items-center justify-center border border-red-600 text-red-600 rounded px-1.5 py-0.5 text-xs font-bold tracking-widest bg-red-50/50">

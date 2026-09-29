@@ -47,16 +47,16 @@ export const TARGET_GROUPS: GroupConfig[] = [
     description: '교원 및 행정실·교육공무직 등 학교 전체 교직원 연수',
   },
   {
-    id: 'parents',
-    label: '학부모',
-    shortLabel: '학부모',
-    description: '학부모회, 학부모 아카데미, 학교설명회 및 상담 연수',
-  },
-  {
     id: 'other',
     label: '교직원(강사포함)',
     shortLabel: '교직원(강사포함)',
     description: '교직원 및 외부·초빙강사, 산학겸임강사 포함 직무연수 및 교육',
+  },
+  {
+    id: 'parents',
+    label: '학부모',
+    shortLabel: '학부모',
+    description: '학부모회, 학부모 아카데미, 학교설명회 및 상담 연수',
   },
   {
     id: 'meeting',

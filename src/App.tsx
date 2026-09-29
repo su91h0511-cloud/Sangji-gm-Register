@@ -480,9 +480,6 @@ export default function App() {
             >
               <FileText className={`w-4 h-4 ${activeTab === 'document' ? 'text-amber-400' : 'text-stone-500'}`} />
               <span>등록부</span>
-              <span className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${activeTab === 'document' ? 'bg-stone-700 text-stone-200' : 'bg-stone-200 text-stone-700'}`}>
-                {currentGroupLabel} {participants.length}명
-              </span>
             </button>
           </div>
 

@@ -114,10 +114,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         {/* Secondary options row */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 mt-2 border-t border-stone-100 text-xs text-stone-600">
           <div className="flex flex-wrap items-center gap-3">
-            {/* Row height selector: only normal (표준) and spacious (넓게) */}
+            {/* Row height selector: 1. 좁게 2. 표준 3. 넓게 */}
             <div className="flex items-center gap-1.5">
               <span className="text-stone-500 text-[11px]">행 높이:</span>
-              {(['normal', 'spacious'] as const).map((height) => (
+              {(['compact', 'normal', 'spacious'] as const).map((height) => (
                 <button
                   key={height}
                   id={`toolbar-row-height-${height}-btn`}
@@ -129,7 +129,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                       : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                   }`}
                 >
-                  {height === 'normal' ? '표준' : '넓게'}
+                  {height === 'compact' ? '좁게' : height === 'normal' ? '표준' : '넓게'}
                 </button>
               ))}
             </div>

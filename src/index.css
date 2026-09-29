@@ -96,6 +96,10 @@
     border-color: #000000 !important;
     font-size: 12pt !important;
   }
+
+  .print-table.border-2 {
+    border: 2px solid #000000 !important;
+  }
 }
 
 /* Screen and default table 12pt typography */
@@ -106,6 +110,10 @@
 .print-table td,
 .print-table input {
   font-size: 12pt;
+}
+
+.print-table.border-2 {
+  border: 2px solid #0c0a09 !important;
 }
 
 /* CloudSyncBadge Save Highlight Keyframes */

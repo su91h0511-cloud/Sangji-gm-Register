@@ -44,7 +44,7 @@ export const TrainingHeaderBox: React.FC<TrainingHeaderBoxProps> = ({
       </div>
 
       {/* Meta Information Table */}
-      <table className="print-table w-full border-collapse border border-stone-800 text-[12pt]">
+      <table className="print-table w-full border-collapse border-2 border-stone-950 text-[12pt]">
         <tbody className="text-[12pt]">
           <tr className="border-b border-stone-800">
             <th className="w-20 sm:w-24 bg-stone-100/90 py-1 sm:py-1.5 px-2.5 font-semibold text-stone-800 text-left border-r border-stone-800 whitespace-nowrap text-[12pt]">
