@@ -448,60 +448,58 @@ export default function App() {
         isDownloadingPdf={isDownloadingPdf}
         pdfProgressText={pdfProgressText}
         totalParticipants={participants.length}
-      />
-
-      {/* Main Tab Navigation Header (Hidden in print) */}
-      <div className="no-print print:hidden w-full bg-white border-b border-stone-200 sticky top-[57px] z-20 shadow-2xs">
-        <div className="max-w-5xl mx-auto px-3 sm:px-6 flex items-center justify-between">
-          <div className="flex space-x-1 sm:space-x-2 py-2">
-            <button
-              id="tab-roster-input-btn"
-              type="button"
-              onClick={() => setActiveTab('roster')}
-              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all border ${
-                activeTab === 'roster'
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs ring-2 ring-indigo-500/40 ring-offset-1'
-                  : 'bg-indigo-50/70 text-indigo-700 border-indigo-200/90 hover:bg-indigo-100 hover:text-indigo-900'
-              }`}
-            >
-              <Users
-                className={`w-4 h-4 ${
-                  activeTab === 'roster' ? 'text-indigo-200' : 'text-indigo-600'
+        tabNavigationSlot={
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex space-x-1 sm:space-x-2">
+              <button
+                id="tab-document-view-btn"
+                type="button"
+                onClick={() => setActiveTab('document')}
+                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all border ${
+                  activeTab === 'document'
+                    ? 'bg-emerald-700 text-white border-emerald-700 shadow-xs ring-2 ring-emerald-600/40 ring-offset-1'
+                    : 'bg-emerald-50/70 text-emerald-800 border-emerald-200/90 hover:bg-emerald-100 hover:text-emerald-950'
                 }`}
-              />
-              <span>명단 입력 및 관리</span>
-            </button>
+              >
+                <FileText
+                  className={`w-4 h-4 ${
+                    activeTab === 'document' ? 'text-emerald-200' : 'text-emerald-700'
+                  }`}
+                />
+                <span>등록부</span>
+              </button>
 
-            <button
-              id="tab-document-view-btn"
-              type="button"
-              onClick={() => setActiveTab('document')}
-              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all border ${
-                activeTab === 'document'
-                  ? 'bg-emerald-700 text-white border-emerald-700 shadow-xs ring-2 ring-emerald-600/40 ring-offset-1'
-                  : 'bg-emerald-50/70 text-emerald-800 border-emerald-200/90 hover:bg-emerald-100 hover:text-emerald-950'
-              }`}
-            >
-              <FileText
-                className={`w-4 h-4 ${
-                  activeTab === 'document' ? 'text-emerald-200' : 'text-emerald-700'
+              <button
+                id="tab-roster-input-btn"
+                type="button"
+                onClick={() => setActiveTab('roster')}
+                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all border ${
+                  activeTab === 'roster'
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs ring-2 ring-indigo-500/40 ring-offset-1'
+                    : 'bg-indigo-50/70 text-indigo-700 border-indigo-200/90 hover:bg-indigo-100 hover:text-indigo-900'
                 }`}
-              />
-              <span>등록부</span>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2.5 text-xs text-stone-600">
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-100 border border-stone-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span>현재 선택: <strong>{currentGroupLabel}</strong></span>
-              <span className="text-stone-400">|</span>
-              <span>{participants.length}명</span>
+              >
+                <Users
+                  className={`w-4 h-4 ${
+                    activeTab === 'roster' ? 'text-indigo-200' : 'text-indigo-600'
+                  }`}
+                />
+                <span>명단 입력 및 관리</span>
+              </button>
             </div>
-            <span className="hidden md:inline">하단 기관: <strong>{trainingInfo.institution || '상지여자중학교'}</strong></span>
+
+            <div className="flex items-center gap-2.5 text-xs text-stone-600">
+              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-100 border border-stone-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>현재 선택: <strong>{currentGroupLabel}</strong></span>
+                <span className="text-stone-400">|</span>
+                <span>{participants.length}명</span>
+              </div>
+              <span className="hidden md:inline">하단 기관: <strong>{trainingInfo.institution || '상지여자중학교'}</strong></span>
+            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Main Content Workspace */}
       <main className="flex-1 w-full max-w-5xl mx-auto px-2 sm:px-4 py-4 print:p-0 print:m-0 print:max-w-none">

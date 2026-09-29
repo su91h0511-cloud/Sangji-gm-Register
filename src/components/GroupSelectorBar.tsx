@@ -46,11 +46,15 @@ export const GroupSelectorBar: React.FC<GroupSelectorBarProps> = ({
             <span className="w-2.5 h-2.5 rounded-full bg-amber-600 animate-pulse shrink-0" />
             {variant === 'document' ? '등록부 대상 선택 (자동 로드):' : '작성 대상 그룹 선택:'}
           </span>
-          <span className="text-xs text-amber-900/85 font-normal">
-            {variant === 'document'
-              ? '명단 입력 및 관리 바탕으로 자동 반영됨, 수기 작성 금지'
-              : '교사, 교직원, 학부모, 교직원(강사포함), 협의회 등록부 각각의 기본 정보와 참가자 명단을 별도로 작성합니다.'}
-          </span>
+          {variant === 'document' ? (
+            <span className="text-xs sm:text-sm font-bold text-blue-700">
+              명단 입력 및 관리에서 수정해주세요.
+            </span>
+          ) : (
+            <span className="text-xs text-amber-900/85 font-normal">
+              교사, 교직원, 학부모, 교직원(강사포함), 협의회 등록부 각각의 기본 정보와 참가자 명단을 별도로 작성합니다.
+            </span>
+          )}
         </div>
 
         {/* Bottom: 5 Group Click Buttons placed cleanly below the text */}

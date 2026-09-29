@@ -14,6 +14,7 @@ interface ToolbarProps {
   onChangeConfig: (newConfig: Partial<FormConfig>) => void;
   selectedGroup?: TargetGroup;
   cloudSyncSlot?: React.ReactNode;
+  tabNavigationSlot?: React.ReactNode;
   onAddRows: (count: number) => void;
   onClearAll: () => void;
   onLoadSample?: () => void;
@@ -33,6 +34,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   config,
   onChangeConfig,
   cloudSyncSlot,
+  tabNavigationSlot,
   onAddRows,
   onClearAll,
   onFillAllSignatures,
@@ -112,7 +114,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           </div>
         </div>
 
-        {/* Secondary options row */}
+        {/* 1. Main Tab Navigation Row (위: 등록부 / 명단 입력 및 관리) */}
+        {tabNavigationSlot && (
+          <div className="pt-2 mt-2 border-t border-stone-200">
+            {tabNavigationSlot}
+          </div>
+        )}
+
+        {/* 2. Secondary options row (아래: 행 높이, 서명, 비고란, 자동 서식 채우기 등) */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 mt-2 border-t border-stone-100 text-xs text-stone-600">
           <div className="flex flex-wrap items-center gap-3">
             {/* Row height selector: 1. 좁게 2. 표준 3. 넓게 */}
