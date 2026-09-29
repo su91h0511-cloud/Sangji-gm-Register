@@ -458,13 +458,17 @@ export default function App() {
               id="tab-roster-input-btn"
               type="button"
               onClick={() => setActiveTab('roster')}
-              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all border ${
                 activeTab === 'roster'
-                  ? 'bg-stone-900 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs ring-2 ring-indigo-500/40 ring-offset-1'
+                  : 'bg-indigo-50/70 text-indigo-700 border-indigo-200/90 hover:bg-indigo-100 hover:text-indigo-900'
               }`}
             >
-              <Users className={`w-4 h-4 ${activeTab === 'roster' ? 'text-amber-400' : 'text-stone-500'}`} />
+              <Users
+                className={`w-4 h-4 ${
+                  activeTab === 'roster' ? 'text-indigo-200' : 'text-indigo-600'
+                }`}
+              />
               <span>명단 입력 및 관리</span>
             </button>
 
@@ -472,13 +476,17 @@ export default function App() {
               id="tab-document-view-btn"
               type="button"
               onClick={() => setActiveTab('document')}
-              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all border ${
                 activeTab === 'document'
-                  ? 'bg-stone-900 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+                  ? 'bg-emerald-700 text-white border-emerald-700 shadow-xs ring-2 ring-emerald-600/40 ring-offset-1'
+                  : 'bg-emerald-50/70 text-emerald-800 border-emerald-200/90 hover:bg-emerald-100 hover:text-emerald-950'
               }`}
             >
-              <FileText className={`w-4 h-4 ${activeTab === 'document' ? 'text-amber-400' : 'text-stone-500'}`} />
+              <FileText
+                className={`w-4 h-4 ${
+                  activeTab === 'document' ? 'text-emerald-200' : 'text-emerald-700'
+                }`}
+              />
               <span>등록부</span>
             </button>
           </div>
