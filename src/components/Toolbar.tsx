@@ -53,7 +53,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Brand / App Title */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white border border-stone-200 shadow-2xs flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-xs flex items-center justify-center shrink-0 overflow-hidden">
               <SangjiEmblem className="w-full h-full object-contain" />
             </div>
             <div>
