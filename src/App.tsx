@@ -24,7 +24,7 @@ import { useCloudSync } from './hooks/useCloudSync';
 import { FileText, Users, Loader2 } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'document' | 'roster'>('roster');
+  const [activeTab, setActiveTab] = useState<'document' | 'roster'>('document');
   const [selectedGroup, setSelectedGroup] = useState<TargetGroup>('teacher');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [pdfErrorMessage, setPdfErrorMessage] = useState<string | null>(null);
